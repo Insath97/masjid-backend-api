@@ -46,7 +46,6 @@ User.init(
     },
     userType: {
       type: DataTypes.ENUM("SYSTEM", "COMMON"),
-      defaultValue: "COMMON",
       allowNull: false,
     },
     username: {
