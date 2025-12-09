@@ -25,13 +25,14 @@ Role.init(
           msg: "Role name is required",
         },
       },
-      set(value) {
-        if (value) {
-          this.setDataValue(
-            "name",
-            slugify(value, { lower: true, strict: true })
-          );
-        }
+    },
+    slug: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: { msg: "This slug is already in use" },
+      validate: {
+        is: { args: /^[a-z0-9-]+$/, msg: "Invalid slug format" },
+        notEmpty: true,
       },
     },
     description: {
@@ -49,6 +50,17 @@ Role.init(
     tableName: "roles",
     timestamps: true,
     paranoid: true,
+    hooks: {
+      beforeValidate: (role) => {
+        if (role.name && (role.changed("name") || !role.slug)) {
+          role.slug = slugify(role.name, {
+            lower: true,
+            strict: true,
+            remove: /[*+~.()'"!:@]/g,
+          });
+        }
+      },
+    },
   }
 );
 

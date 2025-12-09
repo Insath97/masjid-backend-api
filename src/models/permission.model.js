@@ -28,14 +28,30 @@ Permission.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: { notEmpty: { msg: "Permission name is required" } },
+      validate: {
+        notEmpty: { msg: "Permission name is required" },
+      },
       set(value) {
-        if (value) {
-          this.setDataValue(
-            "name",
-            slugify(value, { lower: true, strict: true })
-          );
-        }
+        const trimmed = value.trim();
+        this.setDataValue("name", trimmed);
+        // Always regenerate slug when name changes
+        this.setDataValue(
+          "slug",
+          slugify(trimmed, {
+            lower: true,
+            strict: true,
+            remove: /[*+~.()'"!:@]/g,
+          })
+        );
+      },
+    },
+    slug: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: { msg: "This slug is already in use" },
+      validate: {
+        is: { args: /^[a-z0-9-]+$/, msg: "Invalid slug format" },
+        notEmpty: true,
       },
     },
     description: {
@@ -49,6 +65,17 @@ Permission.init(
     tableName: "permissions",
     timestamps: true,
     paranoid: true,
+    hooks: {
+      beforeValidate: (permission) => {
+        if (permission.changed("name") || !permission.slug) {
+          permission.slug = slugify(permission.name || "", {
+            lower: true,
+            strict: true,
+            remove: /[*+~.()'"!:@]/g,
+          });
+        }
+      },
+    },
   }
 );
 
