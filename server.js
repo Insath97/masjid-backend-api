@@ -20,6 +20,7 @@ const {
 } = require("./src/config/database");
 
 // Import route files
+const authRoutes = require("./src/routes/auth.routes");
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use(
 );
 
 // Routes
+app.use("/api/auth", authRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {
